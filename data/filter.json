@@ -1,4 +1,65 @@
 {
   "mode": "whitelist",
-  "groups": {}
+  "groups": {
+    "SunNxt": {
+      "keywords": [
+        "Gemini",
+        "Sun TV",
+        "Sun Music",
+        "KTV",
+        "Kushi",
+        "Chutti",
+        "Adithya",
+        "Kochu",
+        "Chintu",
+        "Sun Bangla",
+        "Sun Life",
+        "Sun Marathi",
+        "Sun News",
+        "Sun Neo",
+        "Surya",
+        "Udaya"
+      ],
+      "mergeSimilar": true
+    },
+    "Sony": {
+      "keywords": [
+        "SET",
+        "Sony SAB",
+        "Sony MAX",
+        "Sony Pal",
+        "Sony Yay",
+        "Sony Aath",
+        "Sony Marathi",
+        "Sony BBC",
+        "Sony Pix",
+        "Sony WAH",
+        "Sony Sports Ten",
+        "Sony Ten"
+      ],
+      "mergeSimilar": true
+    },
+    "Zee": {
+      "keywords": [
+        "Zee TV",
+        "Zee Telugu",
+        "Zee Cinema",
+        "Zee Tamil",
+        "Zee Kannada",
+        "Zee Marathi",
+        "Zee Bangala",
+        "Zee Bollywood",
+        "Zee Anmol",
+        "Zee Action",
+        "Zee Business",
+        "Zee Hindustan",
+        "Zee News",
+        "Zee Salaam",
+        "Zee Café",
+        "Zing",
+        "Zoom"
+      ],
+      "mergeSimilar": true
+    }
+  }
 }
