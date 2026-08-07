@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Sunnxt M3U",
+    "url": "https://cdn.jsdelivr.net/gh/amitfunny/sunnxt.m3u@main/index.html",
+    "enabled": true
+  },
+  {
+    "name": "Sony TV Hub",
+    "url": "https://servertvhub.site/sony/playlist.php",
+    "enabled": true
+  },
+  {
+    "name": "allinone",
+    "url": "https://cdn.jsdelivr.net/gh/sportlive18/All-Playlist@main/combined.m3u",
+    "enabled": false
+  },
+  {
+    "name": "Clarity TV",
+    "url": "https://clarity-tv.vercel.app/api/playlist/?id=ALLINONE",
+    "enabled": true
+  }
+]
