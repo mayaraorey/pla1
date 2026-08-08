@@ -98,7 +98,7 @@ export default async function handler(req, res) {
               clearKey: srv.drm ? srv.license : null,
               url: srv.url
             };
-            // if (!shouldKeep(flat, filter)) continue;
+            if (!shouldKeep(flat, filter)) continue;
             addCh(channelMap, flat);
           }
         }
