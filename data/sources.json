@@ -2,27 +2,27 @@
   {
     "name": "Sunnxt M3U",
     "url": "https://cdn.jsdelivr.net/gh/amitfunny/sunnxt.m3u@main/index.html",
-    "enabled": true
+    "enabled": false
   },
   {
     "name": "Sony TV Hub",
     "url": "https://servertvhub.site/sony/playlist.php",
-    "enabled": true
+    "enabled": false
   },
   {
     "name": "alltest",
     "url": "https://bugsfreeweb.github.io/LiveTVCollector/LiveTV/India/LiveTV.m3u",
-    "enabled": true
+    "enabled": false
   },
     {
     "name": "sports",
     "url": "https://raw.githubusercontent.com/abusaeeidx/CricHd-playlists-Auto-Update-permanent/refs/heads/main/ALL.m3u",
-    "enabled": true
+    "enabled": false
   },
   {
     "name": "allinone",
     "url": "https://cdn.jsdelivr.net/gh/sportlive18/All-Playlist@main/combined.m3u",
-    "enabled": true
+    "enabled": false
   },
   {
     "name": "Clarity TV",
