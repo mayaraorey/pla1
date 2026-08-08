@@ -17,6 +17,6 @@
   {
     "name": "Clarity TV",
     "url": "https://clarity-tv.vercel.app/api/playlist/?id=ALLINONE",
-    "enabled": false
+    "enabled": true
   }
 ]
