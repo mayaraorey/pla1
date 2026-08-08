@@ -3,7 +3,7 @@
   "groups": {
     "SunNxt": {
       "keywords": [
-        "Sun Gemini",
+        "Gemini",
         "Sun TV",
         "Sun Music",
         "KTV",
@@ -18,7 +18,6 @@
         "Sun News",
         "Sun Neo",
         "Surya",
-        "Gemini HD",
         "Udaya"
       ],
       "mergeSimilar": true
@@ -45,9 +44,6 @@
         "Zee TV",
         "Zee Telugu",
         "Zee Cinema",
-        "Zee Telugu HD",
-        "Zee Telugu SD",
-        "zeetelugu",
         "Zee Tamil",
         "Zee Kannada",
         "Zee Marathi",
@@ -69,6 +65,12 @@
       "keywords": [
         "Willow HD",
         "PTV Sports"
+      ],
+      "mergeSimilar": true
+    },
+    "ETV": {
+      "keywords": [
+        "ETV Telugu"
       ],
       "mergeSimilar": true
     }
