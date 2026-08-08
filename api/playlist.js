@@ -152,7 +152,7 @@ function fetchUrl(url) {
         'Accept': '*/*',
         'Accept-Language': 'en-US,en;q=0.9',
       },
-      timeout: 8000
+      timeout: 20000
     }, (response) => {
       if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
         fetchUrl(response.headers.location).then(resolve);
