@@ -70,8 +70,19 @@
     },
     "ETV": {
       "keywords": [
-        "ETV Telugu",
-        "Zee Telugu SD"
+        "ETV Telugu"
+      ],
+      "mergeSimilar": true
+    },
+    "Colors": {
+      "keywords": [
+        "Colour Tamil HD"
+      ],
+      "mergeSimilar": true
+    },
+    "Star": {
+      "keywords": [
+        "Star Vijay HD"
       ],
       "mergeSimilar": true
     }
