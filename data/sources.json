@@ -9,6 +9,11 @@
     "url": "https://servertvhub.site/sony/playlist.php",
     "enabled": true
   },
+  {
+    "name": "alltest",
+    "url": "https://bugsfreeweb.github.io/LiveTVCollector/LiveTV/India/LiveTV.m3u",
+    "enabled": true
+  },
     {
     "name": "sports",
     "url": "https://raw.githubusercontent.com/abusaeeidx/CricHd-playlists-Auto-Update-permanent/refs/heads/main/ALL.m3u",
