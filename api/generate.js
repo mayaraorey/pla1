@@ -16,7 +16,7 @@ export default function handler(req, res) {
       return res.status(500).json({ error: "API_SECRET not configured" });
     }
     const token = crypto.createHmac('sha256', secret).update(`playlist:${expires}`).digest('hex');
-    const url = `https://chillbox-one.vercel.app/api/playlist?token=${token}&expires=${expires}`;
+    const url = `https://chillboxv1.vercel.app/api/playlist?token=${token}&expires=${expires}`;
     res.status(200).json({
       success: true,
       type: 'playlist',
