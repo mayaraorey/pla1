@@ -2,17 +2,17 @@
   {
     "name": "Sunnxt M3U",
     "url": "https://cdn.jsdelivr.net/gh/amitfunny/sunnxt.m3u@main/index.html",
-    "enabled": false
+    "enabled": true
   },
   {
     "name": "Sony TV Hub",
     "url": "https://servertvhub.site/sony/playlist.php",
-    "enabled": false
+    "enabled": true
   },
   {
     "name": "alltest",
     "url": "https://bugsfreeweb.github.io/LiveTVCollector/LiveTV/India/LiveTV.m3u",
-    "enabled": false
+    "enabled": true
   },
     {
     "name": "sports",
