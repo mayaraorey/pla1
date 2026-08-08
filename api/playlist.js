@@ -32,51 +32,63 @@ export default async function handler(req, res) {
 
     if (fs.existsSync(sourcesPath)) {
       const sources = JSON.parse(fs.readFileSync(sourcesPath, 'utf-8'));
+      const enabledSources = sources.filter(s => s.enabled);
 
-      for (const source of sources) {
-        if (!source.enabled) continue;
-
-        try {
-          const content = await fetchUrl(source.url);
-          debugInfo.push(`${source.name}: fetched ${content.length} bytes`);
-
-          if (!content || content.length < 10) {
-            debugInfo.push(`${source.name}: EMPTY response`);
-            continue;
+      // Fetch all sources in parallel instead of one-at-a-time.
+      // Sequential awaits meant total time = sum of every source's fetch time
+      // (up to 15s each), which could exceed the client timeout or Vercel's
+      // function execution limit. Now total time = slowest single source.
+      const results = await Promise.all(
+        enabledSources.map(async (source) => {
+          try {
+            const content = await fetchUrl(source.url);
+            return { source, content, error: null };
+          } catch (e) {
+            return { source, content: null, error: e.message };
           }
+        })
+      );
 
-          if (content.includes('<!DOCTYPE') || content.includes('<html')) {
-            debugInfo.push(`${source.name}: Got HTML instead of M3U`);
-            continue;
+      for (const { source, content, error } of results) {
+        if (error) {
+          debugInfo.push(`${source.name}: ERROR - ${error}`);
+          continue;
+        }
+
+        debugInfo.push(`${source.name}: fetched ${content.length} bytes`);
+
+        if (!content || content.length < 10) {
+          debugInfo.push(`${source.name}: EMPTY response`);
+          continue;
+        }
+
+        if (content.includes('<!DOCTYPE') || content.includes('<html')) {
+          debugInfo.push(`${source.name}: Got HTML instead of M3U`);
+          continue;
+        }
+
+        const parsed = parseM3U(content);
+        debugInfo.push(`${source.name}: parsed ${parsed.length} channels`);
+
+        // parseM3U() returns channels shaped as
+        // { name, logo, group, language, servers: [{ name, url, drm, license }] }
+        // — there is NO top-level `ch.url`. We flatten each channel's servers
+        // back into the flat shape that addCh() expects, and merge those.
+        for (const ch of parsed) {
+          if (!ch.servers || ch.servers.length === 0) continue;
+          for (const srv of ch.servers) {
+            if (!srv.url || srv.url.length < 5) continue;
+            const flat = {
+              name: ch.name,
+              logo: ch.logo,
+              group: ch.group,
+              language: ch.language,
+              clearKey: srv.drm ? srv.license : null,
+              url: srv.url
+            };
+            // if (!shouldKeep(flat, filter)) continue;
+            addCh(channelMap, flat);
           }
-
-          const parsed = parseM3U(content);
-          debugInfo.push(`${source.name}: parsed ${parsed.length} channels`);
-
-          // FIX: parseM3U() returns channels shaped as
-          // { name, logo, group, language, servers: [{ name, url, drm, license }] }
-          // — there is NO top-level `ch.url`. The old code checked `ch.url` here,
-          // which is always undefined, so every channel was silently dropped.
-          // We now flatten each channel's servers back into the flat shape
-          // that addCh() expects, and merge those instead.
-          for (const ch of parsed) {
-            if (!ch.servers || ch.servers.length === 0) continue;
-            for (const srv of ch.servers) {
-              if (!srv.url || srv.url.length < 5) continue;
-              const flat = {
-                name: ch.name,
-                logo: ch.logo,
-                group: ch.group,
-                language: ch.language,
-                clearKey: srv.drm ? srv.license : null,
-                url: srv.url
-              };
-              // if (!shouldKeep(flat, filter)) continue;
-              addCh(channelMap, flat);
-            }
-          }
-        } catch (e) {
-          debugInfo.push(`${source.name}: ERROR - ${e.message}`);
         }
       }
     }
@@ -128,7 +140,7 @@ function fetchUrl(url) {
         'Accept': '*/*',
         'Accept-Language': 'en-US,en;q=0.9',
       },
-      timeout: 15000
+      timeout: 8000
     }, (response) => {
       if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
         fetchUrl(response.headers.location).then(resolve);
