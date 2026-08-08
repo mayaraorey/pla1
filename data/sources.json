@@ -9,6 +9,11 @@
     "url": "https://servertvhub.site/sony/playlist.php",
     "enabled": true
   },
+    {
+    "name": "sports",
+    "url": "https://raw.githubusercontent.com/abusaeeidx/CricHd-playlists-Auto-Update-permanent/refs/heads/main/ALL.m3u",
+    "enabled": true
+  },
   {
     "name": "allinone",
     "url": "https://cdn.jsdelivr.net/gh/sportlive18/All-Playlist@main/combined.m3u",
