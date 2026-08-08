@@ -5,6 +5,18 @@ import https from 'https';
 import http from 'http';
 
 export default async function handler(req, res) {
+  // CORS: allow browser-based fetch() calls, including preflight requests
+  // triggered by custom headers like x-api-key. Native apps (NSPlayer, etc.)
+  // never send preflight requests, which is why this only affected the
+  // browser-based HTML page and not the direct M3U URL in a player app.
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'x-api-key, Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+
   const { token, expires } = req.query;
   const SECRET = process.env.API_SECRET;
 
