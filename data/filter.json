@@ -76,13 +76,15 @@
     },
     "Colors": {
       "keywords": [
-        "Colour Tamil HD"
+        "Colour Tamil HD",
+        "Colour"
       ],
       "mergeSimilar": true
     },
     "Star": {
       "keywords": [
-        "Star Vijay"
+        "Star Vijay",
+        "Star Maa"
       ],
       "mergeSimilar": true
     }
