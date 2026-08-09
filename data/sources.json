@@ -17,7 +17,7 @@
   {
     "name": "testing",
     "url": "https://raw.githubusercontent.com/amitfunny/astrogo.m3u/refs/heads/main/index.html",
-    "enabled": true
+    "enabled": false
   },
   {
     "name": "alltest",
