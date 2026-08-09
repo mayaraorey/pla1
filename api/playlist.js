@@ -53,17 +53,17 @@ export default async function handler(req, res) {
       const results = await Promise.all(
         enabledSources.map(async (source) => {
           try {
-            const content = await fetchUrl(source.url);
-            return { source, content, error: null };
+            const { content, error } = await fetchUrl(source.url);
+            return { source, content, fetchError: error };
           } catch (e) {
-            return { source, content: null, error: e.message };
+            return { source, content: null, fetchError: e.message };
           }
         })
       );
 
-      for (const { source, content, error } of results) {
-        if (error) {
-          debugInfo.push(`${source.name}: ERROR - ${error}`);
+      for (const { source, content, fetchError } of results) {
+        if (fetchError) {
+          debugInfo.push(`${source.name}: FETCH FAILED - ${fetchError}`);
           continue;
         }
 
@@ -161,16 +161,16 @@ function fetchUrl(url) {
         return;
       }
       if (response.statusCode !== 200) {
-        resolve('');
+        resolve({ content: '', error: `HTTP ${response.statusCode}` });
         return;
       }
       let data = '';
       response.on('data', chunk => data += chunk);
-      response.on('end', () => resolve(data));
-      response.on('error', () => resolve(''));
+      response.on('end', () => resolve({ content: data, error: null }));
+      response.on('error', (err) => resolve({ content: '', error: `stream error: ${err.message}` }));
     });
-    req.on('error', () => resolve(''));
-    req.on('timeout', () => { req.destroy(); resolve(''); });
+    req.on('error', (err) => resolve({ content: '', error: `${err.code || 'ERROR'}: ${err.message}` }));
+    req.on('timeout', () => { req.destroy(); resolve({ content: '', error: 'timeout after 20s' }); });
   });
 }
 
