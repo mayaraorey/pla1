@@ -7,7 +7,7 @@
   {
     "name": "rtc",
     "url": "https://jhs-channels.rtxcric.workers.dev/playlist.m3u",
-    "enabled": true
+    "enabled": false
   },
   {
     "name": "Sony TV Hub",
