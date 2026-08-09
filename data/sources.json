@@ -5,6 +5,11 @@
     "enabled": true
   },
   {
+    "name": "rtc",
+    "url": "https://jhs-channels.rtxcric.workers.dev/playlist.m3u",
+    "enabled": true
+  },
+  {
     "name": "Sony TV Hub",
     "url": "https://servertvhub.site/sony/playlist.php",
     "enabled": true
