@@ -5,10 +5,6 @@ import https from 'https';
 import http from 'http';
 
 export default async function handler(req, res) {
-  // CORS: allow browser-based fetch() calls, including preflight requests
-  // triggered by custom headers like x-api-key. Native apps (NSPlayer, etc.)
-  // never send preflight requests, which is why this only affected the
-  // browser-based HTML page and not the direct M3U URL in a player app.
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'x-api-key, Content-Type');
@@ -46,10 +42,6 @@ export default async function handler(req, res) {
       const sources = JSON.parse(fs.readFileSync(sourcesPath, 'utf-8'));
       const enabledSources = sources.filter(s => s.enabled);
 
-      // Fetch all sources in parallel instead of one-at-a-time.
-      // Sequential awaits meant total time = sum of every source's fetch time
-      // (up to 15s each), which could exceed the client timeout or Vercel's
-      // function execution limit. Now total time = slowest single source.
       const results = await Promise.all(
         enabledSources.map(async (source) => {
           try {
@@ -74,18 +66,39 @@ export default async function handler(req, res) {
           continue;
         }
 
-        if (content.includes('<!DOCTYPE') || content.includes('<html')) {
-          debugInfo.push(`${source.name}: Got HTML instead of M3U`);
-          continue;
+        // Try JSON first, then M3U
+        let parsed = [];
+        try {
+          const json = JSON.parse(content);
+          if (json.channels || Array.isArray(json)) {
+            const list = json.channels || json;
+            if (Array.isArray(list)) {
+              parsed = list.map(ch => ({
+                name: ch.name || 'Unknown',
+                logo: ch.logo || null,
+                group: ch.category || ch.group || 'General',
+                language: ch.language || '',
+                servers: [{
+                  name: 'HD',
+                  url: ch.mpd || ch.stream_url || ch.url,
+                  drm: (ch.keyId || ch.key_id) ? 'clearkey' : '',
+                  license: (ch.keyId || ch.key_id) + ':' + (ch.key || '')
+                }]
+              }));
+            }
+          }
+        } catch {
+          // Not JSON, try M3U
+          if (content.includes('#EXTINF') || content.includes('#EXTM3U')) {
+            parsed = parseM3U(content);
+          } else if (content.includes('<!DOCTYPE') || content.includes('<html')) {
+            debugInfo.push(`${source.name}: Got HTML instead of playlist`);
+            continue;
+          }
         }
 
-        const parsed = parseM3U(content);
         debugInfo.push(`${source.name}: parsed ${parsed.length} channels`);
 
-        // parseM3U() returns channels shaped as
-        // { name, logo, group, language, servers: [{ name, url, drm, license }] }
-        // — there is NO top-level `ch.url`. We flatten each channel's servers
-        // back into the flat shape that addCh() expects, and merge those.
         for (const ch of parsed) {
           if (!ch.servers || ch.servers.length === 0) continue;
           for (const srv of ch.servers) {
@@ -148,9 +161,6 @@ function fetchUrl(url) {
     const client = url.startsWith('https') ? https : http;
     const req = client.get(url, {
       headers: {
-        // A realistic Chrome UA gets redirected by some sources (e.g. Clarity TV)
-        // to a promo/landing page instead of the real M3U. A plain, non-browser
-        // UA — matching what curl/cmd-line tools send — gets the real content.
         'User-Agent': 'IPTVPlayer/1.0',
         'Accept': '*/*',
       },
@@ -212,7 +222,7 @@ function parseM3U(content) {
 }
 
 function shouldKeep(channel, filter) {
-  if (!filter) return true;
+  if (!filter || filter.mode === 'none') return true;
   const name = (channel.name || '').toLowerCase().trim();
   if (!filter.groups || Object.keys(filter.groups).length === 0) return true;
   for (const g of Object.values(filter.groups)) {
