@@ -1,94 +1,95 @@
 {
   "mode": "whitelist",
   "groups": {
-    "SunNxt": {
-      "keywords": [
-        "Gemini",
-        "Sun TV",
-        "Sun Music",
-        "KTV",
-        "Kushi",
-        "Chutti",
-        "Adithya",
-        "Kochu",
-        "Chintu",
-        "Sun Bangla",
-        "Sun Life",
-        "Sun Marathi",
-        "Sun News",
-        "Sun Neo",
-        "Surya",
-        "Udaya"
-      ],
-      "mergeSimilar": true
+    "Tamil": {
+      "keywords": ["Sun TV", "KTV", "Sun Music", "Adithya", "Kushi", "Chutti", "Sun Life", "Sun News", "Star Vijay", "Zee Tamil", "Colors Tamil", "Jaya TV", "Raj TV", "Vasanth", "Captain TV", "Mega TV", "Sirippoli", "Polimer", "News18 Tamil", "Thanthi TV", "Puthiya Thalaimurai", "Makkal TV", "Peppers", "J Movie", "Kalaignar", "Isaiaruvi", "Murugan", "Angel TV", "Madha", "Vendhar", "Sahana", "Imayam", "DD Podhigai"],
+      "mergeSimilar": true,
+      "language": "Tamil"
     },
-    "Sony": {
-      "keywords": [
-        "SET",
-        "Sony SAB",
-        "Sony MAX",
-        "Sony Pal",
-        "Sony Yay",
-        "Sony Aath",
-        "Sony Marathi",
-        "Sony BBC",
-        "Sony Pix",
-        "Sony WAH",
-        "Sony Sports Ten",
-        "Sony Ten"
-      ],
-      "mergeSimilar": true
+    "Telugu": {
+      "keywords": ["Zee Telugu", "ETV Telugu", "Gemini", "Gemini Movies", "Star Maa", "Maa", "TV9", "NTV", "V6", "ABN Andhra", "TV5", "Sakshi", "10TV", "Bhakti", "Studio One", "Raj News", "HMTV", "Zee Cinemalu", "ETV Plus", "ETV Cinema", "ETV Life", "ETV Abhiruchi", "ETV Andhra", "DD Yadagiri"],
+      "mergeSimilar": true,
+      "language": "Telugu"
     },
-    "Zee": {
-      "keywords": [
-        "Zee TV",
-        "Zee Telugu",
-        "Zee Cinema",
-        "Zee Tamil",
-        "Zee Kannada",
-        "Zee Marathi",
-        "Zee Bangala",
-        "Zee Bollywood",
-        "Zee Anmol",
-        "Zee Action",
-        "Zee Business",
-        "Zee Hindustan",
-        "Zee News",
-        "Zee Salaam",
-        "Zee Café",
-        "Zing",
-        "Zoom"
-      ],
-      "mergeSimilar": true
+    "Kannada": {
+      "keywords": ["Zee Kannada", "Colors Kannada", "Udaya", "Star Suvarna", "Public TV", "TV9 Kannada", "Suvarna News", "Kasthuri", "Raj Musix Kannada", "BTV", "Power TV", "News18 Kannada", "DD Chandana"],
+      "mergeSimilar": true,
+      "language": "Kannada"
+    },
+    "Malayalam": {
+      "keywords": ["Asianet", "Surya", "Kairali", "Mazhavil", "Manorama", "Kochu", "Flowers", "Zee Keralam", "Asianet Movies", "Asianet Plus", "Kappa", "Media One", "News18 Kerala", "24 News", "Janam", "DD Malayalam"],
+      "mergeSimilar": true,
+      "language": "Malayalam"
+    },
+    "Marathi": {
+      "keywords": ["Zee Marathi", "Sony Marathi", "Sun Marathi", "Star Pravah", "Colors Marathi", "ABP Majha", "TV9 Marathi", "Saam", "Zee 24 Taas", "DD Sahyadri", "Fakt Marathi"],
+      "mergeSimilar": true,
+      "language": "Marathi"
+    },
+    "Bengali": {
+      "keywords": ["Sun Bangla", "Zee Bangla", "Star Jalsha", "Colors Bangla", "ABP Ananda", "Sony Aath", "Jalsha Movies", "News18 Bangla", "Zee 24 Ghanta", "DD Bangla", "Aakash Aath"],
+      "mergeSimilar": true,
+      "language": "Bengali"
+    },
+    "Hindi Entertainment": {
+      "keywords": ["Star Plus", "Colors", "Sony TV", "Zee TV", "Sony SAB", "Star Bharat", "& TV", "Dangal", "Shemaroo", "Zee Anmol", "Star Utsav", "Colors Rishtey", "Big Magic", "DD National", "Sony Pal"],
+      "mergeSimilar": true,
+      "language": "Hindi"
+    },
+    "Hindi Movies": {
+      "keywords": ["Star Gold", "Zee Cinema", "Sony MAX", "& Pictures", "Colors Cineplex", "Zee Bollywood", "Zee Action", "Star Gold 2", "B4U Movies", "Sony WAH", "Zee Classic", "Zee Anmol Cinema", "DD Movies"],
+      "mergeSimilar": true,
+      "language": "Hindi"
+    },
+    "Hindi News": {
+      "keywords": ["Aaj Tak", "India TV", "ABP News", "Zee News", "NDTV India", "News18 India", "Republic Bharat", "TV9 Bharatvarsh", "DD News", "Zee Hindustan", "Zee Business", "CNBC Awaaz", "News Nation", "India News", "Sudarshan"],
+      "mergeSimilar": false,
+      "language": "Hindi"
     },
     "Sports": {
-      "keywords": [
-        "Willow HD",
-        "Star Sports",
-        "star sports",
-        "PTV Sports"
-      ],
-      "mergeSimilar": true
+      "keywords": ["Star Sports", "Sports18", "Sony Sports", "Sony Ten", "Willow", "PTV Sports", "Ten Sports", "Sky Sports", "ESPN", "beIN", "Premier Sports", "Euro", "WWE", "Golf", "DD Sports", "Khel", "Arena", "Grandstand", "Football"],
+      "mergeSimilar": true,
+      "language": "English"
     },
-    "ETV": {
-      "keywords": [
-        "ETV Telugu"
-      ],
-      "mergeSimilar": true
+    "Kids": {
+      "keywords": ["Cartoon", "Nickelodeon", "Nick", "Sonic", "CBeebies", "DreamWorks", "Disney", "Pogo", "Hungama", "Discovery Kids", "Gubbare", "Sony Yay"],
+      "mergeSimilar": true,
+      "language": "Multi"
     },
-    "Colors": {
-      "keywords": [
-        "Colour Tamil HD",
-        "Colour"
-      ],
-      "mergeSimilar": true
+    "Music": {
+      "keywords": ["MTV", "VH1", "9XM", "Mastiii", "B4U", "Zing", "Zoom", "Music India", "DD Music"],
+      "mergeSimilar": false,
+      "language": "Hindi"
     },
-    "Star": {
-      "keywords": [
-        "Star Vijay",
-        "Star Maa"
-      ],
-      "mergeSimilar": true
+    "English Entertainment": {
+      "keywords": ["Comedy Central", "Colors Infinity", "AXN", "BBC", "Zee Cafe", "WB", "HBO", "FX", "Star World"],
+      "mergeSimilar": false,
+      "language": "English"
+    },
+    "Infotainment": {
+      "keywords": ["Discovery", "Nat Geo", "History", "TLC", "Food", "Travel", "Animal Planet", "DD Kisan", "Science"],
+      "mergeSimilar": false,
+      "language": "English"
+    },
+    "Devotional": {
+      "keywords": ["Aastha", "Sanskar", "God", "Sadhna", "Ishwar", "Jinvani", "Peace of Mind", "Aradhana", "Divya", "Paras", "Satsang"],
+      "mergeSimilar": false,
+      "language": "Hindi"
+    },
+    "Gujarati": {
+      "keywords": ["Colors Gujarati", "TV9 Gujarati", "ABP Asmita", "GS TV", "DD Girnar"],
+      "mergeSimilar": true,
+      "language": "Gujarati"
+    },
+    "Punjabi": {
+      "keywords": ["PTC", "Zee Punjabi", "DD Punjabi", "MH1", "Pitaara"],
+      "mergeSimilar": true,
+      "language": "Punjabi"
+    },
+    "Odia": {
+      "keywords": ["Tarang", "Zee Sarthak", "DD Odia", "News18 Odia", "Prameya"],
+      "mergeSimilar": true,
+      "language": "Odia"
     }
   }
 }
