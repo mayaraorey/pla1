@@ -5,6 +5,11 @@
     "enabled": true
   },
   {
+    "name": "JioTV Auto",
+    "url": "https://raw.githubusercontent.com/Diljan707/Automated-/refs/heads/main/JioTV_Auto.m3u",
+    "enabled": true
+},
+  {
     "name": "rtc",
     "url": "https://jhs-channels.rtxcric.workers.dev/playlist.m3u",
     "enabled": true
