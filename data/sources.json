@@ -2,42 +2,42 @@
   {
     "name": "Sunnxt M3U",
     "url": "https://cdn.jsdelivr.net/gh/amitfunny/sunnxt.m3u@main/index.html",
-    "enabled": false
+    "enabled": true
   },
   {
     "name": "rtc",
     "url": "https://jhs-channels.rtxcric.workers.dev/playlist.m3u",
-    "enabled": false
+    "enabled": true
   },
   {
     "name": "Sony TV Hub",
     "url": "https://servertvhub.site/sony/playlist.php",
-    "enabled": false
+    "enabled": true
   },
   {
     "name": "testing",
     "url": "https://raw.githubusercontent.com/amitfunny/astrogo.m3u/refs/heads/main/index.html",
-    "enabled": false
+    "enabled": true
   },
   {
     "name": "alltest",
     "url": "https://bugsfreeweb.github.io/LiveTVCollector/LiveTV/India/LiveTV.m3u",
-    "enabled": false
+    "enabled": true
   },
   {
     "name": "sports",
     "url": "https://raw.githubusercontent.com/abusaeeidx/CricHd-playlists-Auto-Update-permanent/refs/heads/main/ALL.m3u",
-    "enabled": false
+    "enabled": true
   },
   {
     "name": "allinone",
     "url": "https://cdn.jsdelivr.net/gh/sportlive18/All-Playlist@main/combined.m3u",
-    "enabled": false
+    "enabled": true
   },
   {
     "name": "Clarity TV",
     "url": "https://clarity-tv.vercel.app/api/playlist/?id=ALLINONE",
-    "enabled": false
+    "enabled": true
   },
   {
     "name": "Sports JSON",
