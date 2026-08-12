@@ -37,7 +37,7 @@
   {
     "name": "allinone",
     "url": "https://cdn.jsdelivr.net/gh/sportlive18/All-Playlist@main/combined.m3u",
-    "enabled": true
+    "enabled": false
   },
   {
     "name": "Clarity TV",
