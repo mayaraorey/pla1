@@ -5,6 +5,11 @@
     "enabled": true
   },
   {
+    "name": "Mrgify BDIX IPTV",
+    "url": "https://raw.githubusercontent.com/abusaeeidx/Mrgify-BDIX-IPTV/refs/heads/main/Channels_data.json",
+    "enabled": true
+},
+  {
     "name": "JioTV Auto",
     "url": "https://raw.githubusercontent.com/Diljan707/Automated-/refs/heads/main/JioTV_Auto.m3u",
     "enabled": true
