@@ -10,8 +10,10 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'x-api-key, Content-Type');
   if (req.method === 'OPTIONS') return res.status(204).end();
 
-  const { token, expires } = req.query;
+  const { token, expires, validate } = req.query;
   const SECRET = process.env.API_SECRET;
+  const shouldValidate = validate === 'true';
+
   if (token && expires) {
     const expected = crypto.createHmac('sha256', SECRET).update(`playlist:${expires}`).digest('hex');
     if (token !== expected) return res.status(403).send('Invalid token');
@@ -69,7 +71,6 @@ export default async function handler(req, res) {
           if (!ch.servers || ch.servers.length === 0) continue;
           for (const srv of ch.servers) {
             if (!srv.url || srv.url.length < 5) continue;
-            // Skip geo-blocked Astro streams
             if (srv.url.includes('linearjitp-playback.astro.com.my')) continue;
             const flat = { name: ch.name, logo: ch.logo, group: ch.group, language: ch.language,
               clearKey: srv.drm ? srv.license : null, cookie: srv.cookie || '', referer: srv.referer || '', origin: srv.origin || '', url: srv.url };
@@ -80,9 +81,36 @@ export default async function handler(req, res) {
       }
     }
 
-    const channels = Object.values(channelMap);
+    let channels = Object.values(channelMap);
+    let totalBeforeValidate = channels.length;
+
+    // Stream validation - only runs when ?validate=true
+    if (shouldValidate) {
+      debugInfo.push(`Validating ${channels.length} streams...`);
+      const batchSize = 15;
+      const liveChannels = [];
+      
+      for (let i = 0; i < channels.length; i += batchSize) {
+        const batch = channels.slice(i, i + batchSize);
+        const results = await Promise.all(batch.map(async (ch) => {
+          const primaryServer = ch.servers?.[0];
+          if (!primaryServer?.url) return null;
+          const alive = await isStreamAlive(primaryServer.url);
+          return alive ? ch : null;
+        }));
+        const alive = results.filter(Boolean);
+        liveChannels.push(...alive);
+        debugInfo.push(`Batch ${Math.floor(i/batchSize)+1}: ${alive.length}/${batch.length} alive`);
+      }
+      
+      channels = liveChannels;
+      debugInfo.push(`Validation complete: ${liveChannels.length}/${totalBeforeValidate} streams alive`);
+    }
+
     let playlist = '#EXTM3U\n';
-    playlist += `# CHILL BOX - ${channels.length} channels\n`;
+    playlist += `# CHILL BOX - ${channels.length} channels`;
+    if (shouldValidate) playlist += ` (validated: ${channels.length}/${totalBeforeValidate} alive)`;
+    playlist += '\n';
     playlist += `# Debug: ${debugInfo.join(' | ')}\n`;
 
     for (const ch of channels) {
@@ -104,6 +132,20 @@ export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.status(200).send(playlist);
   } catch (e) { res.status(500).json({ error: e.message }); }
+}
+
+function isStreamAlive(url) {
+  return new Promise((resolve) => {
+    const client = url.startsWith('https') ? https : http;
+    const req = client.get(url, {
+      headers: { 'User-Agent': 'IPTVPlayer/1.0' },
+      timeout: 5000
+    }, (res) => {
+      resolve(res.statusCode === 200 || res.statusCode === 302 || res.statusCode === 301);
+    });
+    req.on('error', () => resolve(false));
+    req.on('timeout', () => { req.destroy(); resolve(false); });
+  });
 }
 
 function extractName(line) {
@@ -136,19 +178,14 @@ function parseM3U(content) {
   for (const line of lines) {
     const l = line.trim();
     if (!l) continue;
-
-    // KODIPROP - ClearKey
     if (l.startsWith('#KODIPROP:') && l.includes('license_key=')) { pendingClearKey = l.split('license_key=')[1]?.trim(); continue; }
-    // EXTVLCOPT headers
     if (l.startsWith('#EXTVLCOPT:http-cookie=')) { pendingCookie = l.split('http-cookie=')[1]?.trim(); continue; }
     if (l.startsWith('#EXTVLCOPT:http-referrer=')) { pendingReferer = l.split('http-referrer=')[1]?.trim(); continue; }
     if (l.startsWith('#EXTVLCOPT:http-origin=')) { pendingOrigin = l.split('http-origin=')[1]?.trim(); continue; }
-    // EXTHTTP JSON format
     if (l.startsWith('#EXTHTTP:')) {
       try { const json = JSON.parse(l.substring(9)); if (json.cookie) pendingCookie = json.cookie; if (json.Referer) pendingReferer = json.Referer; if (json.Origin) pendingOrigin = json.Origin; } catch {} 
       continue;
     }
-
     if (l.startsWith('#EXTINF:')) {
       if (cur.url && cur.name && cur.url.length > 5) addCh(channels, cur);
       cur = { name: extractName(l), logo: (l.match(/tvg-logo="([^"]+)"/) || [])[1] || null,
