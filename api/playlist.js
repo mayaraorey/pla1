@@ -28,7 +28,9 @@ export default async function handler(req, res) {
     const sourcesPath = path.join(process.cwd(), 'data', 'sources.json');
     const filterPath = path.join(process.cwd(), 'data', 'filter.json');
     let filter = null;
-    if (fs.existsSync(filterPath)) { try { filter = JSON.parse(fs.readFileSync(filterPath, 'utf-8')); } catch(e) {} }
+    if (fs.existsSync(filterPath)) { 
+      try { filter = JSON.parse(fs.readFileSync(filterPath, 'utf-8')); } catch(e) {} 
+    }
 
     let channelMap = {};
     let debugInfo = [];
@@ -38,14 +40,25 @@ export default async function handler(req, res) {
       const enabledSources = sources.filter(s => s.enabled);
 
       const results = await Promise.all(enabledSources.map(async (source) => {
-        try { const { content, error } = await fetchUrl(source.url); return { source, content, fetchError: error }; }
-        catch (e) { return { source, content: null, fetchError: e.message }; }
+        try { 
+          const { content, error } = await fetchUrl(source.url); 
+          return { source, content, fetchError: error }; 
+        }
+        catch (e) { 
+          return { source, content: null, fetchError: e.message }; 
+        }
       }));
 
       for (const { source, content, fetchError } of results) {
-        if (fetchError) { debugInfo.push(`${source.name}: FETCH FAILED`); continue; }
+        if (fetchError) { 
+          debugInfo.push(`${source.name}: FETCH FAILED`); 
+          continue; 
+        }
         debugInfo.push(`${source.name}: ${content.length} bytes`);
-        if (!content || content.length < 10) { debugInfo.push(`${source.name}: EMPTY`); continue; }
+        if (!content || content.length < 10) { 
+          debugInfo.push(`${source.name}: EMPTY`); 
+          continue; 
+        }
 
         let parsed = [];
         try {
@@ -53,38 +66,71 @@ export default async function handler(req, res) {
           const list = json.channels || (Array.isArray(json) ? json : []);
           if (list.length > 0) {
             parsed = list.map(ch => ({
-              name: ch.name || 'Unknown', logo: ch.logo || null,
-              group: ch.category || ch.group || 'General', language: ch.language || '',
-              servers: [{ name: 'HD', url: ch.mpd || ch.stream_url || ch.url,
+              name: ch.name || 'Unknown', 
+              logo: ch.logo || null,
+              group: ch.category || ch.group || 'General', 
+              language: ch.language || '',
+              servers: [{ 
+                name: 'HD', 
+                url: ch.mpd || ch.stream_url || ch.url,
                 drm: (ch.keyId || ch.key_id) ? 'clearkey' : '',
                 license: (ch.keyId || ch.key_id) + ':' + (ch.key || ''),
-                cookie: ch.cookie || '', referer: 'https://www.jiotv.com/', origin: 'https://www.jiotv.com/' }]
+                cookie: ch.cookie || '', 
+                referer: ch.referer || 'https://www.jiotv.com/', 
+                origin: ch.origin || 'https://www.jiotv.com/' 
+              }]
             }));
           }
         } catch {
-          if (content.includes('#EXTINF') || content.includes('#EXTM3U')) { parsed = parseM3U(content); }
-          else if (content.includes('<!DOCTYPE') || content.includes('<html')) { debugInfo.push(`${source.name}: HTML`); continue; }
+          if (content.includes('#EXTINF') || content.includes('#EXTM3U')) { 
+            parsed = parseM3U(content); 
+          }
+          else if (content.includes('<!DOCTYPE') || content.includes('<html')) { 
+            debugInfo.push(`${source.name}: HTML`); 
+            continue; 
+          }
         }
-        debugInfo.push(`${source.name}: ${parsed.length} channels`);
+        debugInfo.push(`${source.name}: ${parsed.length} channels parsed`);
+
+        // APPLY PER-SOURCE FILTER
+        const sourceFilter = source.filter || null;
+        let filteredCount = 0;
 
         for (const ch of parsed) {
           if (!ch.servers || ch.servers.length === 0) continue;
           for (const srv of ch.servers) {
             if (!srv.url || srv.url.length < 5) continue;
             if (srv.url.includes('linearjitp-playback.astro.com.my')) continue;
-            const flat = { name: ch.name, logo: ch.logo, group: ch.group, language: ch.language,
-              clearKey: srv.drm ? srv.license : null, cookie: srv.cookie || '', referer: srv.referer || '', origin: srv.origin || '', url: srv.url };
+            
+            const flat = { 
+              name: ch.name, 
+              logo: ch.logo, 
+              group: ch.group, 
+              language: ch.language,
+              clearKey: srv.drm ? srv.license : null, 
+              cookie: srv.cookie || '', 
+              referer: srv.referer || '', 
+              origin: srv.origin || '', 
+              url: srv.url 
+            };
+            
+            // Check global filter
             if (!shouldKeep(flat, filter)) continue;
+            
+            // Check source-specific filter
+            if (sourceFilter && !shouldKeepBySourceFilter(flat, sourceFilter)) continue;
+            
             addCh(channelMap, flat);
+            filteredCount++;
           }
         }
+        debugInfo.push(`${source.name}: ${filteredCount} channels after filtering`);
       }
     }
 
     let channels = Object.values(channelMap);
     let totalBeforeValidate = channels.length;
 
-    // Stream validation - only runs when ?validate=true
     if (shouldValidate) {
       debugInfo.push(`Validating ${channels.length} streams...`);
       const batchSize = 15;
@@ -131,7 +177,39 @@ export default async function handler(req, res) {
     res.setHeader('Content-Type', 'audio/x-mpegurl');
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.status(200).send(playlist);
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { 
+    res.status(500).json({ error: e.message }); 
+  }
+}
+
+function shouldKeepBySourceFilter(channel, sourceFilter) {
+  if (!sourceFilter) return true;
+  
+  const name = (channel.name || '').toLowerCase().trim();
+  const group = (channel.group || '').toLowerCase().trim();
+  
+  if (sourceFilter.keywords && sourceFilter.keywords.length > 0) {
+    const matchesKeyword = sourceFilter.keywords.some(kw => 
+      name.includes(kw.toLowerCase().trim()) || group.includes(kw.toLowerCase().trim())
+    );
+    if (!matchesKeyword) return false;
+  }
+  
+  if (sourceFilter.groups && sourceFilter.groups.length > 0) {
+    const matchesGroup = sourceFilter.groups.some(g => 
+      group.includes(g.toLowerCase().trim())
+    );
+    if (!matchesGroup) return false;
+  }
+  
+  if (sourceFilter.exclude && sourceFilter.exclude.length > 0) {
+    const matchesExclude = sourceFilter.exclude.some(kw => 
+      name.includes(kw.toLowerCase().trim()) || group.includes(kw.toLowerCase().trim())
+    );
+    if (matchesExclude) return false;
+  }
+  
+  return true;
 }
 
 function isStreamAlive(url) {
@@ -152,17 +230,31 @@ function extractName(line) {
   const stdMatch = line.match(/,([^,]+)$/);
   if (stdMatch && stdMatch[1].trim().length > 1) return stdMatch[1].trim();
   const quotes = line.split('"');
-  if (quotes.length >= 2) { const after = quotes[quotes.length - 1].trim(); if (after && after.length > 1 && !after.startsWith('http')) return after; }
+  if (quotes.length >= 2) { 
+    const after = quotes[quotes.length - 1].trim(); 
+    if (after && after.length > 1 && !after.startsWith('http')) return after; 
+  }
   return 'Unknown';
 }
 
 function fetchUrl(url) {
   return new Promise((resolve) => {
     const client = url.startsWith('https') ? https : http;
-    const req = client.get(url, { headers: { 'User-Agent': 'IPTVPlayer/1.0', 'Accept': '*/*' }, timeout: 20000 }, (response) => {
-      if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) { fetchUrl(response.headers.location).then(resolve); return; }
-      if (response.statusCode !== 200) { resolve({ content: '', error: `HTTP ${response.statusCode}` }); return; }
-      let data = ''; response.on('data', chunk => data += chunk); response.on('end', () => resolve({ content: data, error: null }));
+    const req = client.get(url, { 
+      headers: { 'User-Agent': 'IPTVPlayer/1.0', 'Accept': '*/*' }, 
+      timeout: 20000 
+    }, (response) => {
+      if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) { 
+        fetchUrl(response.headers.location).then(resolve); 
+        return; 
+      }
+      if (response.statusCode !== 200) { 
+        resolve({ content: '', error: `HTTP ${response.statusCode}` }); 
+        return; 
+      }
+      let data = ''; 
+      response.on('data', chunk => data += chunk); 
+      response.on('end', () => resolve({ content: data, error: null }));
       response.on('error', (err) => resolve({ content: '', error: err.message }));
     });
     req.on('error', (err) => resolve({ content: '', error: err.message }));
@@ -171,31 +263,62 @@ function fetchUrl(url) {
 }
 
 function parseM3U(content) {
-  const lines = content.split('\n'); const channels = {};
+  const lines = content.split('\n'); 
+  const channels = {};
   let cur = { name: '', logo: null, group: 'Chill Box', language: '', clearKey: null, cookie: null, referer: null, origin: null, url: null };
   let pendingClearKey = null, pendingCookie = null, pendingReferer = null, pendingOrigin = null;
 
   for (const line of lines) {
     const l = line.trim();
     if (!l) continue;
-    if (l.startsWith('#KODIPROP:') && l.includes('license_key=')) { pendingClearKey = l.split('license_key=')[1]?.trim(); continue; }
-    if (l.startsWith('#EXTVLCOPT:http-cookie=')) { pendingCookie = l.split('http-cookie=')[1]?.trim(); continue; }
-    if (l.startsWith('#EXTVLCOPT:http-referrer=')) { pendingReferer = l.split('http-referrer=')[1]?.trim(); continue; }
-    if (l.startsWith('#EXTVLCOPT:http-origin=')) { pendingOrigin = l.split('http-origin=')[1]?.trim(); continue; }
+    if (l.startsWith('#KODIPROP:') && l.includes('license_key=')) { 
+      pendingClearKey = l.substring(l.indexOf('license_key=') + 'license_key='.length).trim(); 
+      continue; 
+    }
+    if (l.startsWith('#EXTVLCOPT:http-cookie=')) { 
+      pendingCookie = l.substring(l.indexOf('http-cookie=') + 'http-cookie='.length).trim(); 
+      continue; 
+    }
+    if (l.startsWith('#EXTVLCOPT:http-referrer=')) { 
+      pendingReferer = l.substring(l.indexOf('http-referrer=') + 'http-referrer='.length).trim(); 
+      continue; 
+    }
+    if (l.startsWith('#EXTVLCOPT:http-origin=')) { 
+      pendingOrigin = l.substring(l.indexOf('http-origin=') + 'http-origin='.length).trim(); 
+      continue; 
+    }
     if (l.startsWith('#EXTHTTP:')) {
-      try { const json = JSON.parse(l.substring(9)); if (json.cookie) pendingCookie = json.cookie; if (json.Referer) pendingReferer = json.Referer; if (json.Origin) pendingOrigin = json.Origin; } catch {} 
+      try { 
+        const json = JSON.parse(l.substring(9)); 
+        if (json.cookie) pendingCookie = json.cookie; 
+        if (json.Referer) pendingReferer = json.Referer; 
+        if (json.Origin) pendingOrigin = json.Origin; 
+      } catch {} 
       continue;
     }
     if (l.startsWith('#EXTINF:')) {
       if (cur.url && cur.name && cur.url.length > 5) addCh(channels, cur);
-      cur = { name: extractName(l), logo: (l.match(/tvg-logo="([^"]+)"/) || [])[1] || null,
+      cur = { 
+        name: extractName(l), 
+        logo: (l.match(/tvg-logo="([^"]+)"/) || [])[1] || null,
         group: (l.match(/group-title="([^"]+)"/) || [])[1] || 'Chill Box',
         language: (l.match(/tvg-language="([^"]+)"/) || [])[1] || '',
-        clearKey: pendingClearKey, cookie: pendingCookie, referer: pendingReferer, origin: pendingOrigin, url: null };
-      pendingClearKey = null; pendingCookie = null; pendingReferer = null; pendingOrigin = null;
+        clearKey: pendingClearKey, 
+        cookie: pendingCookie, 
+        referer: pendingReferer, 
+        origin: pendingOrigin, 
+        url: null 
+      };
+      pendingClearKey = null; 
+      pendingCookie = null; 
+      pendingReferer = null; 
+      pendingOrigin = null;
     } else if ((l.startsWith('https://') || l.startsWith('http://')) && !l.startsWith('#')) {
       cur.url = l;
-      if (cur.name && cur.url.length > 5) { addCh(channels, cur); cur = { name: '', logo: null, group: 'Chill Box', language: '', clearKey: null, cookie: null, referer: null, origin: null, url: null }; }
+      if (cur.name && cur.url.length > 5) { 
+        addCh(channels, cur); 
+        cur = { name: '', logo: null, group: 'Chill Box', language: '', clearKey: null, cookie: null, referer: null, origin: null, url: null }; 
+      }
     }
   }
   if (cur.url && cur.name && cur.url.length > 5) addCh(channels, cur);
@@ -206,7 +329,11 @@ function shouldKeep(channel, filter) {
   if (!filter || filter.mode === 'none') return true;
   const name = (channel.name || '').toLowerCase().trim();
   if (!filter.groups || Object.keys(filter.groups).length === 0) return true;
-  for (const g of Object.values(filter.groups)) { for (const kw of (g.keywords || [])) { if (name.includes(kw.toLowerCase().trim())) return true; } }
+  for (const g of Object.values(filter.groups)) { 
+    for (const kw of (g.keywords || [])) { 
+      if (name.includes(kw.toLowerCase().trim())) return true; 
+    } 
+  }
   return false;
 }
 
@@ -216,8 +343,20 @@ function addCh(dict, ch) {
   if (cleanUrl.includes('|')) cleanUrl = cleanUrl.substring(0, cleanUrl.indexOf('|'));
   let base = ch.name.replace(/\s+(HD|SD|4K|FHD|UHD)\s*$/gi, '').trim();
   if (!base) base = ch.name.trim();
-  const srv = { name: 'SD', url: cleanUrl, drm: ch.clearKey ? 'clearkey' : '', license: ch.clearKey || '', cookie: ch.cookie || '', referer: ch.referer || '', origin: ch.origin || '' };
+  const srv = { 
+    name: 'SD', 
+    url: cleanUrl, 
+    drm: ch.clearKey ? 'clearkey' : '', 
+    license: ch.clearKey || '', 
+    cookie: ch.cookie || '', 
+    referer: ch.referer || '', 
+    origin: ch.origin || '' 
+  };
   const id = base.toLowerCase().replace(/[^a-z0-9_]/g, '_');
-  if (!dict[id]) { dict[id] = { id, name: base, language: ch.language, logo: ch.logo, group: ch.group || 'Chill Box', servers: [srv] }; }
-  else { if (!dict[id].servers.some(s => s.url === cleanUrl)) dict[id].servers.push(srv); }
+  if (!dict[id]) { 
+    dict[id] = { id, name: base, language: ch.language, logo: ch.logo, group: ch.group || 'Chill Box', servers: [srv] }; 
+  }
+  else { 
+    if (!dict[id].servers.some(s => s.url === cleanUrl)) dict[id].servers.push(srv); 
+  }
 }
