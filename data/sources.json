@@ -10,6 +10,16 @@
     }
   },
   {
+  "name": "Zee5 JSON",
+  "url": "https://sportlink-fifa-live.pages.dev/zee5.json",
+  "enabled": true,
+  "filter": {
+    "keywords": ["zee", "and", "discovery", "tlc", "ndtv", "zoom", "zing", "shortstv", "korean"],
+    "groups": [],
+    "exclude": []
+  }
+  },
+  {
     "name": "Willow M3U",
     "url": "https://raw.githubusercontent.com/srhady/willow-event/refs/heads/main/live_sports.json",
     "enabled": true,
