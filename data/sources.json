@@ -2,58 +2,58 @@
   {
     "name": "Sunnxt M3U",
     "url": "https://cdn.jsdelivr.net/gh/amitfunny/sunnxt.m3u@main/index.html",
-    "enabled": true
+    "enabled": false
   },
   
   {
     "name": "star M3U",
     "url": "https://raw.githubusercontent.com/sportlive18/Hotstar-Auto-Update/refs/heads/main/playlist.m3u",
-    "enabled": true
+    "enabled": false
   },
   {
     "name": "willow M3U",
     "url": "https://raw.githubusercontent.com/srhady/willow-event/refs/heads/main/live_sports.json",
-    "enabled": true
+    "enabled": false
   },
   {
     "name": "Mrgify BDIX IPTV",
     "url": "https://raw.githubusercontent.com/abusaeeidx/Mrgify-BDIX-IPTV/refs/heads/main/Channels_data.json",
-    "enabled": true
+    "enabled": false
   },
   {
     "name": "JioTV Auto",
     "url": "https://raw.githubusercontent.com/Diljan707/Automated-/refs/heads/main/JioTV_Auto.m3u",
-    "enabled": true
+    "enabled": false
   },
   {
     "name": "rtc",
     "url": "https://jhs-channels.rtxcric.workers.dev/playlist.m3u",
-    "enabled": true
+    "enabled": false
   },
   {
     "name": "Sony TV Hub",
     "url": "https://servertvhub.site/sony/playlist.php",
-    "enabled": true
+    "enabled": false
   },
   {
     "name": "testing",
     "url": "https://raw.githubusercontent.com/amitfunny/astrogo.m3u/refs/heads/main/index.html",
-    "enabled": true
+    "enabled": false
   },
   {
     "name": "alltest",
     "url": "https://bugsfreeweb.github.io/LiveTVCollector/LiveTV/India/LiveTV.m3u",
-    "enabled": true
+    "enabled": false
   },
   {
     "name": "JioTV 1",
     "url": "https://servertvhub.site/jio1290/app/playlist.php?id=Jiotv+",
-    "enabled": true
+    "enabled": false
   },
   {
     "name": "sports",
     "url": "https://raw.githubusercontent.com/abusaeeidx/CricHd-playlists-Auto-Update-permanent/refs/heads/main/ALL.m3u",
-    "enabled": true
+    "enabled": false
   },
   {
     "name": "allinone",
@@ -63,16 +63,16 @@
   {
     "name": "Clarity TV",
     "url": "https://clarity-tv.vercel.app/api/playlist/?id=ALLINONE",
-    "enabled": true
+    "enabled": false
   },
   {
     "name": "Sports JSON",
     "url": "https://sonujson-devloper.vercel.app/Data/sports.json",
-    "enabled": true
+    "enabled": false
   },
   {
     "name": "Geoplus JSON",
     "url": "https://raw.githubusercontent.com/qwerty180506/json/refs/heads/main/Geoplus.json",
-    "enabled": true
+    "enabled": false
   }
 ]
