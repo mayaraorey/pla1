@@ -10,14 +10,14 @@
     }
   },
   {
-  "name": "Zee5 JSON",
-  "url": "https://sportlink-fifa-live.pages.dev/zee5.json",
-  "enabled": true,
-  "filter": {
-    "keywords": ["zee", "and", "discovery", "tlc", "ndtv", "zoom", "zing", "shortstv", "korean"],
-    "groups": [],
-    "exclude": []
-  }
+    "name": "Zee5 JSON",
+    "url": "https://sportlink-fifa-live.pages.dev/zee5.json",
+    "enabled": true,
+    "filter": {
+      "keywords": ["zee", "and", "discovery", "tlc", "ndtv", "zoom", "zing", "shortstv", "korean"],
+      "groups": [],
+      "exclude": []
+    }
   },
   {
     "name": "Willow M3U",
@@ -165,6 +165,16 @@
     "enabled": true,
     "filter": {
       "keywords": ["zee", "sony", "star"],
+      "groups": [],
+      "exclude": []
+    }
+  },
+  {
+    "name": "Seeubot Video M3U",
+    "url": "https://raw.githubusercontent.com/seeubot/T/refs/heads/main/video.m3u",
+    "enabled": true,
+    "filter": {
+      "keywords": [],
       "groups": [],
       "exclude": []
     }
