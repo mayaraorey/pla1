@@ -12,7 +12,7 @@ export default async function handler(req, res) {
 
   const { token, expires, validate } = req.query;
   const SECRET = process.env.API_SECRET;
-  const shouldValidate = validate === 'true' || validate === '1';
+  const shouldValidate = validate === 'true';
 
   if (token && expires) {
     const expected = crypto.createHmac('sha256', SECRET).update(`playlist:${expires}`).digest('hex');
@@ -54,6 +54,7 @@ export default async function handler(req, res) {
           debugInfo.push(`${source.name}: FETCH FAILED`); 
           continue; 
         }
+        debugInfo.push(`${source.name}: ${content.length} bytes`);
         if (!content || content.length < 10) { 
           debugInfo.push(`${source.name}: EMPTY`); 
           continue; 
@@ -84,10 +85,16 @@ export default async function handler(req, res) {
           if (content.includes('#EXTINF') || content.includes('#EXTM3U')) { 
             parsed = parseM3U(content); 
           }
+          else if (content.includes('<!DOCTYPE') || content.includes('<html')) { 
+            debugInfo.push(`${source.name}: HTML`); 
+            continue; 
+          }
         }
         debugInfo.push(`${source.name}: ${parsed.length} channels parsed`);
 
+        // APPLY PER-SOURCE FILTER
         const sourceFilter = source.filter || null;
+        let filteredCount = 0;
 
         for (const ch of parsed) {
           if (!ch.servers || ch.servers.length === 0) continue;
@@ -107,63 +114,48 @@ export default async function handler(req, res) {
               url: srv.url 
             };
             
+            // Check global filter
             if (!shouldKeep(flat, filter)) continue;
+            
+            // Check source-specific filter
             if (sourceFilter && !shouldKeepBySourceFilter(flat, sourceFilter)) continue;
             
             addCh(channelMap, flat);
+            filteredCount++;
           }
         }
+        debugInfo.push(`${source.name}: ${filteredCount} channels after filtering`);
       }
     }
 
     let channels = Object.values(channelMap);
     let totalBeforeValidate = channels.length;
 
-    // Validate servers - only return working ones
     if (shouldValidate) {
-      debugInfo.push(`Validating ${channels.length} channels...`);
-      
-      const batchSize = 10;
-      const validatedChannels = [];
+      debugInfo.push(`Validating ${channels.length} streams...`);
+      const batchSize = 15;
+      const liveChannels = [];
       
       for (let i = 0; i < channels.length; i += batchSize) {
         const batch = channels.slice(i, i + batchSize);
-        
         const results = await Promise.all(batch.map(async (ch) => {
-          // Test all servers for this channel
-          const workingServers = [];
-          
-          for (const server of ch.servers) {
-            if (!server.url) continue;
-            
-            const alive = await isStreamAlive(server.url);
-            if (alive) {
-              workingServers.push(server);
-            }
-          }
-          
-          // Only return channel if at least one server works
-          if (workingServers.length > 0) {
-            return {
-              ...ch,
-              servers: workingServers // Only working servers
-            };
-          }
-          return null;
+          const primaryServer = ch.servers?.[0];
+          if (!primaryServer?.url) return null;
+          const alive = await isStreamAlive(primaryServer.url);
+          return alive ? ch : null;
         }));
-        
-        const validResults = results.filter(Boolean);
-        validatedChannels.push(...validResults);
-        debugInfo.push(`Batch ${Math.floor(i/batchSize)+1}: ${validResults.length}/${batch.length} channels with working servers`);
+        const alive = results.filter(Boolean);
+        liveChannels.push(...alive);
+        debugInfo.push(`Batch ${Math.floor(i/batchSize)+1}: ${alive.length}/${batch.length} alive`);
       }
       
-      channels = validatedChannels;
-      debugInfo.push(`Validation complete: ${channels.length}/${totalBeforeValidate} channels have working servers`);
+      channels = liveChannels;
+      debugInfo.push(`Validation complete: ${liveChannels.length}/${totalBeforeValidate} streams alive`);
     }
 
     let playlist = '#EXTM3U\n';
     playlist += `# CHILL BOX - ${channels.length} channels`;
-    if (shouldValidate) playlist += ` (validated)`;
+    if (shouldValidate) playlist += ` (validated: ${channels.length}/${totalBeforeValidate} alive)`;
     playlist += '\n';
     playlist += `# Debug: ${debugInfo.join(' | ')}\n`;
 
@@ -190,26 +182,181 @@ export default async function handler(req, res) {
   }
 }
 
-// Updated isStreamAlive with DRM support
-function isStreamAlive(url, clearKey = null) {
+function shouldKeepBySourceFilter(channel, sourceFilter) {
+  if (!sourceFilter) return true;
+  
+  const name = (channel.name || '').toLowerCase().trim();
+  const group = (channel.group || '').toLowerCase().trim();
+  
+  if (sourceFilter.keywords && sourceFilter.keywords.length > 0) {
+    const matchesKeyword = sourceFilter.keywords.some(kw => 
+      name.includes(kw.toLowerCase().trim()) || group.includes(kw.toLowerCase().trim())
+    );
+    if (!matchesKeyword) return false;
+  }
+  
+  if (sourceFilter.groups && sourceFilter.groups.length > 0) {
+    const matchesGroup = sourceFilter.groups.some(g => 
+      group.includes(g.toLowerCase().trim())
+    );
+    if (!matchesGroup) return false;
+  }
+  
+  if (sourceFilter.exclude && sourceFilter.exclude.length > 0) {
+    const matchesExclude = sourceFilter.exclude.some(kw => 
+      name.includes(kw.toLowerCase().trim()) || group.includes(kw.toLowerCase().trim())
+    );
+    if (matchesExclude) return false;
+  }
+  
+  return true;
+}
+
+function isStreamAlive(url) {
   return new Promise((resolve) => {
     const client = url.startsWith('https') ? https : http;
     const req = client.get(url, {
       headers: { 'User-Agent': 'IPTVPlayer/1.0' },
-      timeout: 8000
+      timeout: 5000
     }, (res) => {
-      if (res.statusCode === 200 || res.statusCode === 302 || res.statusCode === 301) {
-        resolve(true);
-      } else {
-        // For DRM streams, 403 might still work with proper headers
-        if (res.statusCode === 403 && clearKey) {
-          resolve(true);
-        } else {
-          resolve(false);
-        }
-      }
+      resolve(res.statusCode === 200 || res.statusCode === 302 || res.statusCode === 301);
     });
     req.on('error', () => resolve(false));
     req.on('timeout', () => { req.destroy(); resolve(false); });
   });
+}
+
+function extractName(line) {
+  const stdMatch = line.match(/,([^,]+)$/);
+  if (stdMatch && stdMatch[1].trim().length > 1) return stdMatch[1].trim();
+  const quotes = line.split('"');
+  if (quotes.length >= 2) { 
+    const after = quotes[quotes.length - 1].trim(); 
+    if (after && after.length > 1 && !after.startsWith('http')) return after; 
+  }
+  return 'Unknown';
+}
+
+function fetchUrl(url) {
+  return new Promise((resolve) => {
+    const client = url.startsWith('https') ? https : http;
+    const req = client.get(url, { 
+      headers: { 'User-Agent': 'IPTVPlayer/1.0', 'Accept': '*/*' }, 
+      timeout: 20000 
+    }, (response) => {
+      if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) { 
+        fetchUrl(response.headers.location).then(resolve); 
+        return; 
+      }
+      if (response.statusCode !== 200) { 
+        resolve({ content: '', error: `HTTP ${response.statusCode}` }); 
+        return; 
+      }
+      let data = ''; 
+      response.on('data', chunk => data += chunk); 
+      response.on('end', () => resolve({ content: data, error: null }));
+      response.on('error', (err) => resolve({ content: '', error: err.message }));
+    });
+    req.on('error', (err) => resolve({ content: '', error: err.message }));
+    req.on('timeout', () => { req.destroy(); resolve({ content: '', error: 'timeout' }); });
+  });
+}
+
+function parseM3U(content) {
+  const lines = content.split('\n'); 
+  const channels = {};
+  let cur = { name: '', logo: null, group: 'Chill Box', language: '', clearKey: null, cookie: null, referer: null, origin: null, url: null };
+  let pendingClearKey = null, pendingCookie = null, pendingReferer = null, pendingOrigin = null;
+
+  for (const line of lines) {
+    const l = line.trim();
+    if (!l) continue;
+    if (l.startsWith('#KODIPROP:') && l.includes('license_key=')) { 
+      pendingClearKey = l.substring(l.indexOf('license_key=') + 'license_key='.length).trim(); 
+      continue; 
+    }
+    if (l.startsWith('#EXTVLCOPT:http-cookie=')) { 
+      pendingCookie = l.substring(l.indexOf('http-cookie=') + 'http-cookie='.length).trim(); 
+      continue; 
+    }
+    if (l.startsWith('#EXTVLCOPT:http-referrer=')) { 
+      pendingReferer = l.substring(l.indexOf('http-referrer=') + 'http-referrer='.length).trim(); 
+      continue; 
+    }
+    if (l.startsWith('#EXTVLCOPT:http-origin=')) { 
+      pendingOrigin = l.substring(l.indexOf('http-origin=') + 'http-origin='.length).trim(); 
+      continue; 
+    }
+    if (l.startsWith('#EXTHTTP:')) {
+      try { 
+        const json = JSON.parse(l.substring(9)); 
+        if (json.cookie) pendingCookie = json.cookie; 
+        if (json.Referer) pendingReferer = json.Referer; 
+        if (json.Origin) pendingOrigin = json.Origin; 
+      } catch {} 
+      continue;
+    }
+    if (l.startsWith('#EXTINF:')) {
+      if (cur.url && cur.name && cur.url.length > 5) addCh(channels, cur);
+      cur = { 
+        name: extractName(l), 
+        logo: (l.match(/tvg-logo="([^"]+)"/) || [])[1] || null,
+        group: (l.match(/group-title="([^"]+)"/) || [])[1] || 'Chill Box',
+        language: (l.match(/tvg-language="([^"]+)"/) || [])[1] || '',
+        clearKey: pendingClearKey, 
+        cookie: pendingCookie, 
+        referer: pendingReferer, 
+        origin: pendingOrigin, 
+        url: null 
+      };
+      pendingClearKey = null; 
+      pendingCookie = null; 
+      pendingReferer = null; 
+      pendingOrigin = null;
+    } else if ((l.startsWith('https://') || l.startsWith('http://')) && !l.startsWith('#')) {
+      cur.url = l;
+      if (cur.name && cur.url.length > 5) { 
+        addCh(channels, cur); 
+        cur = { name: '', logo: null, group: 'Chill Box', language: '', clearKey: null, cookie: null, referer: null, origin: null, url: null }; 
+      }
+    }
+  }
+  if (cur.url && cur.name && cur.url.length > 5) addCh(channels, cur);
+  return Object.values(channels);
+}
+
+function shouldKeep(channel, filter) {
+  if (!filter || filter.mode === 'none') return true;
+  const name = (channel.name || '').toLowerCase().trim();
+  if (!filter.groups || Object.keys(filter.groups).length === 0) return true;
+  for (const g of Object.values(filter.groups)) { 
+    for (const kw of (g.keywords || [])) { 
+      if (name.includes(kw.toLowerCase().trim())) return true; 
+    } 
+  }
+  return false;
+}
+
+function addCh(dict, ch) {
+  if (!ch.url || ch.url.length < 5) return;
+  let cleanUrl = ch.url;
+  if (cleanUrl.includes('|')) cleanUrl = cleanUrl.substring(0, cleanUrl.indexOf('|'));
+  let base = ch.name.replace(/\s+(HD|SD|4K|FHD|UHD)\s*$/gi, '').trim();
+  if (!base) base = ch.name.trim();
+  const srv = { 
+    name: 'SD', 
+    url: cleanUrl, 
+    drm: ch.clearKey ? 'clearkey' : '', 
+    license: ch.clearKey || '', 
+    cookie: ch.cookie || '', 
+    referer: ch.referer || '', 
+    origin: ch.origin || '' 
+  };
+  const id = base.toLowerCase().replace(/[^a-z0-9_]/g, '_');
+  if (!dict[id]) { 
+    dict[id] = { id, name: base, language: ch.language, logo: ch.logo, group: ch.group || 'Chill Box', servers: [srv] }; 
+  }
+  else { 
+    if (!dict[id].servers.some(s => s.url === cleanUrl)) dict[id].servers.push(srv); 
+  }
 }
