@@ -2,7 +2,7 @@
   {
     "name": "Sunnxt M3U",
     "url": "https://cdn.jsdelivr.net/gh/amitfunny/sunnxt.m3u@main/index.html",
-    "enabled": false,
+    "enabled": true,
     "filter": {
       "keywords": [],
       "groups": ["SUN"],
@@ -12,7 +12,7 @@
   {
     "name": "Zee5 JSON",
     "url": "https://sportlink-fifa-live.pages.dev/zee5.json",
-    "enabled": false,
+    "enabled": true,
     "filter": {
       "keywords": ["zee", "and", "discovery", "tlc", "ndtv", "zoom", "zing", "shortstv", "korean"],
       "groups": [],
@@ -22,7 +22,7 @@
   {
     "name": "Willow M3U",
     "url": "https://raw.githubusercontent.com/srhady/willow-event/refs/heads/main/live_sports.json",
-    "enabled": false,
+    "enabled": true,
     "filter": {
       "keywords": ["willow", "cricket", "sports"],
       "groups": ["sports"],
@@ -32,7 +32,7 @@
   {
     "name": "Mrgify BDIX IPTV",
     "url": "https://raw.githubusercontent.com/abusaeeidx/Mrgify-BDIX-IPTV/refs/heads/main/Channels_data.json",
-    "enabled": false,
+    "enabled": true,
     "filter": {
       "keywords": [],
       "groups": [],
@@ -42,7 +42,7 @@
   {
     "name": "JioTV Auto",
     "url": "https://raw.githubusercontent.com/Diljan707/Automated-/refs/heads/main/JioTV_Auto.m3u",
-    "enabled": false,
+    "enabled": true,
     "filter": {
       "keywords": [],
       "groups": [],
@@ -52,7 +52,7 @@
   {
     "name": "RTC",
     "url": "https://jhs-channels.rtxcric.workers.dev/playlist.m3u",
-    "enabled": false,
+    "enabled": true,
     "filter": {
       "keywords": [],
       "groups": [],
@@ -62,7 +62,7 @@
   {
     "name": "Sony TV Hub",
     "url": "https://servertvhub.site/sony/playlist.php",
-    "enabled": false,
+    "enabled": true,
     "filter": {
       "keywords": ["sony"],
       "groups": ["sony"],
@@ -72,7 +72,7 @@
   {
     "name": "Testing",
     "url": "https://raw.githubusercontent.com/amitfunny/astrogo.m3u/refs/heads/main/index.html",
-    "enabled": false,
+    "enabled": true,
     "filter": {
       "keywords": ["Star Vijay", "Colors Tamil"],
       "groups": [],
@@ -82,7 +82,7 @@
   {
     "name": "Alltest",
     "url": "https://bugsfreeweb.github.io/LiveTVCollector/LiveTV/India/LiveTV.m3u",
-    "enabled": false,
+    "enabled": true,
     "filter": {
       "keywords": [],
       "groups": [],
@@ -92,7 +92,7 @@
   {
     "name": "JioTV 1",
     "url": "https://servertvhub.site/jio1290/app/playlist.php?id=Jiotv+",
-    "enabled": false,
+    "enabled": true,
     "filter": {
       "keywords": [],
       "groups": [],
@@ -102,7 +102,7 @@
   {
     "name": "Sports",
     "url": "https://raw.githubusercontent.com/abusaeeidx/CricHd-playlists-Auto-Update-permanent/refs/heads/main/ALL.m3u",
-    "enabled": false,
+    "enabled": true,
     "filter": {
       "keywords": ["sports", "cricket", "star sports", "sony ten", "willow", "football"],
       "groups": ["sports"],
@@ -112,9 +112,9 @@
   {
     "name": "Clarity TV",
     "url": "https://clarity-tv.vercel.app/api/playlist/?id=ALLINONE",
-    "enabled": false,
+    "enabled": true,
     "filter": {
-      "keywords": ["Zee Telugu","SUN TV", "gemini", "Zee Tamil", "sony"],
+      "keywords": ["Zee Telugu", "SUN TV", "gemini", "Zee Tamil", "sony"],
       "groups": [],
       "exclude": []
     }
@@ -132,7 +132,7 @@
   {
     "name": "Geoplus JSON",
     "url": "https://raw.githubusercontent.com/qwerty180506/json/refs/heads/main/Geoplus.json",
-    "enabled": false,
+    "enabled": true,
     "filter": {
       "keywords": [],
       "groups": [],
@@ -142,7 +142,7 @@
   {
     "name": "Hotstar Auto Update",
     "url": "https://raw.githubusercontent.com/sportlive18/Hotstar-Auto-Update/refs/heads/main/playlist.m3u",
-    "enabled": false,
+    "enabled": true,
     "filter": {
       "keywords": [],
       "groups": [],
@@ -150,7 +150,7 @@
     }
   },
   {
-    "name": "king Auto Update",
+    "name": "King IPTV",
     "url": "https://kingiptv19august.zonmp.net",
     "enabled": true,
     "filter": {
@@ -162,7 +162,7 @@
   {
     "name": "JioTV Auto Update",
     "url": "https://raw.githubusercontent.com/sportlive18/jio-tv-auto-update-playlist/refs/heads/main/jtv.m3u",
-    "enabled": false,
+    "enabled": true,
     "filter": {
       "keywords": [],
       "groups": [],
@@ -172,7 +172,7 @@
   {
     "name": "All Playlist Combined",
     "url": "https://raw.githubusercontent.com/sportlive18/All-Playlist/refs/heads/main/combined.m3u",
-    "enabled": false,
+    "enabled": true,
     "filter": {
       "keywords": ["zee", "sony", "star"],
       "groups": [],
@@ -182,6 +182,26 @@
   {
     "name": "Seeubot Video M3U",
     "url": "https://raw.githubusercontent.com/seeubot/T/refs/heads/main/video.m3u",
+    "enabled": true,
+    "filter": {
+      "keywords": [],
+      "groups": [],
+      "exclude": []
+    }
+  },
+  {
+    "name": "StreamFlex",
+    "url": "https://streamflexsmm.in/Web/pl.php",
+    "enabled": true,
+    "filter": {
+      "keywords": [],
+      "groups": [],
+      "exclude": []
+    }
+  },
+  {
+    "name": "SFlexZio",
+    "url": "https://sflexzio.pages.dev/",
     "enabled": true,
     "filter": {
       "keywords": [],
